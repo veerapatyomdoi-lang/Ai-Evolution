@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>โรงงานผลิต AI</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700;800&family=Chakra+Petch:wght@600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f0f0f;
+    --track: #1a1a1a;
+    --border: #2a2a2a;
+    --yellow: #f5c518;
+    --orange: #e8721c;
+    --green: #22c55e;
+    --blue: #3b82f6;
+    --purple: #a855f7;
+    --red: #ef4444;
+    --text: #e8e8e8;
+    --muted: #888;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Sarabun', sans-serif;
+    min-height: 100vh;
+    padding: 40px 20px 80px;
+  }
+
+  header {
+    text-align: center;
+    margin-bottom: 60px;
+  }
+
+  header h1 {
+    font-family: 'Chakra Petch', sans-serif;
+    font-size: clamp(1.8rem, 5vw, 3rem);
+    color: var(--yellow);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  header p {
+    color: var(--muted);
+    margin-top: 8px;
+    font-size: 1rem;
+  }
+
+  /* ---- PHASE BLOCK ---- */
+  .phase {
+    position: relative;
+    margin-bottom: 0;
+  }
+
+  .phase-label {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 14px 28px;
+    font-family: 'Chakra Petch', sans-serif;
+    font-size: 0.85rem;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    font-weight: 700;
+    border-left: 4px solid;
+    margin-bottom: 0;
+  }
+
+  .phase-label .num {
+    font-size: 2rem;
+    opacity: 0.25;
+    line-height: 1;
+  }
+
+  /* ---- CONVEYOR ---- */
+  .conveyor {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    gap: 0;
+    padding: 24px 28px;
+    background: var(--track);
+    border-left: 4px solid;
+    position: relative;
+    scrollbar-width: thin;
+    scrollbar-color: #333 transparent;
+  }
+
+  .conveyor::before {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 8px;
+    background: repeating-linear-gradient(90deg, #333 0px, #333 20px, #1a1a1a 20px, #1a1a1a 40px);
+  }
+
+  /* Arrow connector between cards */
+  .arrow {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+    padding: 0 4px;
+    color: #444;
+    font-size: 1.2rem;
+  }
+
+  /* ---- STATION CARD ---- */
+  .card {
+    flex-shrink: 0;
+    width: 180px;
+    background: #0f0f0f;
+    border: 1px solid var(--border);
+    border-top: 3px solid;
+    padding: 16px 14px;
+    position: relative;
+    transition: transform 0.2s, border-color 0.2s;
+  }
+
+  .card:hover {
+    transform: translateY(-4px);
+    border-color: var(--card-color, #555) !important;
+    border-top-color: var(--card-color, #555) !important;
+  }
+
+  .card .icon {
+    font-size: 1.6rem;
+    margin-bottom: 10px;
+    display: block;
+  }
+
+  .card .step-num {
+    font-family: 'Chakra Petch', sans-serif;
+    font-size: 0.65rem;
+    color: var(--muted);
+    letter-spacing: 2px;
+    margin-bottom: 4px;
+  }
+
+  .card h3 {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 8px;
+    line-height: 1.3;
+  }
+
+  .card p {
+    font-size: 0.75rem;
+    color: #aaa;
+    line-height: 1.5;
+  }
+
+  /* ---- COLORS PER PHASE ---- */
+  .phase-1 .phase-label { border-color: var(--orange); color: var(--orange); }
+  .phase-1 .conveyor { border-color: var(--orange); }
+  .phase-1 .card { border-top-color: var(--orange); --card-color: var(--orange); }
+
+  .phase-2 .phase-label { border-color: var(--blue); color: var(--blue); }
+  .phase-2 .conveyor { border-color: var(--blue); }
+  .phase-2 .card { border-top-color: var(--blue); --card-color: var(--blue); }
+
+  .phase-3 .phase-label { border-color: var(--purple); color: var(--purple); }
+  .phase-3 .conveyor { border-color: var(--purple); }
+  .phase-3 .card { border-top-color: var(--purple); --card-color: var(--purple); }
+
+  /* divider between training and runtime */
+  .divider {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin: 40px 0;
+    padding: 0 28px;
+  }
+
+  .divider::before, .divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #444, transparent);
+  }
+
+  .divider span {
+    font-family: 'Chakra Petch', sans-serif;
+    font-size: 0.75rem;
+    letter-spacing: 4px;
+    color: var(--yellow);
+    text-transform: uppercase;
+    background: var(--bg);
+    padding: 6px 16px;
+    border: 1px solid var(--yellow);
+    white-space: nowrap;
+  }
+
+  .phase-4 .phase-label { border-color: #06b6d4; color: #06b6d4; }
+  .phase-4 .conveyor { border-color: #06b6d4; }
+  .phase-4 .card { border-top-color: #06b6d4; --card-color: #06b6d4; }
+
+  .phase-5 .phase-label { border-color: var(--green); color: var(--green); }
+  .phase-5 .conveyor { border-color: var(--green); }
+  .phase-5 .card { border-top-color: var(--green); --card-color: var(--green); }
+
+  .phase-6 .phase-label { border-color: var(--yellow); color: var(--yellow); }
+  .phase-6 .conveyor { border-color: var(--yellow); }
+  .phase-6 .card { border-top-color: var(--yellow); --card-color: var(--yellow); }
+
+  .phase-7 .phase-label { border-color: var(--red); color: var(--red); }
+  .phase-7 .conveyor { border-color: var(--red); }
+  .phase-7 .card { border-top-color: var(--red); --card-color: var(--red); }
+
+  /* vertical connector between phases */
+  .phase-connector {
+    width: 4px;
+    height: 32px;
+    background: linear-gradient(to bottom, #333, #555);
+    margin-left: 28px;
+  }
+
+  /* output badge */
+  .output-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: #111;
+    border: 1px solid var(--green);
+    color: var(--green);
+    padding: 6px 16px;
+    font-family: 'Chakra Petch', sans-serif;
+    font-size: 0.75rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-left: 28px;
+  }
+
+  .card .badge-optional {
+    display: inline-block;
+    background: #222;
+    color: var(--muted);
+    font-size: 0.6rem;
+    padding: 1px 6px;
+    margin-top: 6px;
+    letter-spacing: 1px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🏭 โรงงานผลิต AI</h1>
+  <p>สายพานตั้งแต่ขุดข้อมูลดิบ จนถึงคำตอบบนหน้าจอคุณ</p>
+</header>
+
+<!-- PHASE 1: Data Harvesting -->
+<div class="phase phase-1">
+  <div class="phase-label">
+    <span class="num">01</span>
+    <span>⛏️ แผนกขุดและล้างข้อมูล</span>
+  </div>
+  <div class="conveyor">
+
+    <div class="card">
+      <span class="icon">🕷️</span>
+      <div class="step-num">STEP 01</div>
+      <h3>หุ่นยนต์ท่องเว็บ</h3>
+      <p>วิ่งไปตามลิงก์ทั่วอินเทอร์เน็ต ดาวน์โหลดเนื้อหามาเก็บในคลัง</p>
+    </div>
+    <div class="arrow">→</div>
+
+    <div class="card">
+      <span class="icon">🫧</span>
+      <div class="step-num">STEP 02</div>
+      <h3>ปอกเปลือกหน้าเว็บ</h3>
+      <p>เอาโค้ด โฆษณา ปุ่มต่างๆ ออก เหลือแค่เนื้อหาข้อความล้วนๆ</p>
+    </div>
+    <div class="arrow">→</div>
+
+    <div class="card">
+      <span class="icon">🌐</span>
+      <div class="step-num">STEP 03</div>
+      <h3>แยกภาษา</h3>
+      <p>สแกนข้อความแล้วแยกเป็นกองภาษาไทย อังกฤษ ญี่ปุ่น ฯลฯ</p>
+    </div>
+    <div class="arrow">→</div>
+
+    <div class="card">
+      <span class="icon">🪞</span>
+      <div class="step-num">STEP 04</div>
+      <h3>ลบของก๊อปปี้</h3>
+      <p>หาข้อความที่ซ้ำกันทั่วเน็ต ลบทิ้งให้เหลือต้นฉบับอันเดียว</p>
+    </div>
+    <div class="arrow">→</div>
+
+    <div class="card">
+      <span class="icon">🙈</span>
+      <div class="step-num">STEP 05</div>
+      <h3>ลบข้อมูลส่วนตัว</h3>
+      <p>ไล่ลบเบอร์โทร เลขบัตร อีเมลจริงๆ ออกหมดก่อนเก็บ</p>
+    </div>
+    <div class="arrow">→</div>
+
+    <div class="card">
+      <span class="icon">🗑️</span>
+      <div class="step-num">STEP 06</div>
+      <h3>กรองขยะออก</h3>
+      <p>ทิ้งสแปม บทความมั่วๆ หรือข้อความไร้สาระที่ไม่มีประโยชน์</p>
+    </div>
+    <div class="arrow">→</div>
+
+    <div class="card">
+      <span class="icon">✍️</span>
+      <div class="step-num">STEP 07</div>
+      <h3>เขียนข้อมูลเติม</h3>
+      <p>ถ้าข้อมูลบางเรื่องมีน้อย ก็สร้างตัวอย่างเพิ่มขึ้นมาเองให้ครบ</p>
+    </div>
+    <div class="arrow">→</div>
+
+    <div class="card">
+      <span class="icon">🚫</span>
+      <div class="step-num">STEP 08</div>
+      <h3>บล็อกเนื้อหาอันตราย</h3>
+      <p>กรองสูตรทำอาวุธ วิธีแฮก คำหยาบ ออกก่อนที่จะเข้าไปในสมอง AI</p>
+    </div>
+
+  </div>
+</div>
+
+<div class="phase-connector"></div>
+
+<!-- PHASE 2: Pre-training -->
+<div class="phase phase-2">
+  <div class="phase-label">
+    <span class="num">02</span>
+    <span>🏫 แผนกสอนภาษาและความรู้</span>
+  </div>
+  <div class="conveyor">
+
+    <div class="card">
+      <span class="icon">✂️</span>
+      <div class="step-num">STEP 09</div>
+      <h3>หั่นคำ</h3>
+      <p>ตัดประโยคยาวๆ ให้กลายเป็นชิ้นคำเล็กๆ พร้อมส่งเข้าเครื่องคำนวณ</p>
+    </div>
+    <div class="arrow">→</div>
+
+    <div class="card">
+      <span class="icon">📍</span>
+      <div class="step-num">STEP 10</div>
+      <h3>แปลงคำเป็นตัวเลข</h3>
+      <p>ทุกคำถูกแปลงเป็นพิกัดตัวเลข เพื่อให้เครื่องคำนวณเปรียบเทียบความหมายได้</p>
+    </div>
+    <div class="arrow">→</div>
+
+    <div class="card">
+      <span class="icon">🧠</span>
+      <div class="step-num">STEP 11</div>
+      <h3>สมองเปล่าเริ่มเรียน</h3>
+      <p>ฝึกด้วยเกม "เดาคำถัดไป" จากข้อมูลทั้งหมดที่เตรียมไว้ ทำซ้ำนับล้านรอบ</p>
+    </div>
+    <div class="arrow">→</div>
+
+    <div class="card">
+      <span class="icon">📉</span>
+      <div class="step-num">STEP 12</div>
+      <h3>ตรวจคะแนนและปรับ</h3>
+      <p>คำนวณว่าเดาผิดมากแค่ไหน แล้วปรับค่าสมองให้ดีขึ้นในทันที</p>
+    </div>
+    <div class="arrow">→</div>
+
+    <div class="card">
+      <span class="icon">🖥️</span>
+      <div class="step-num">STEP 13</div>
+      <h3>ประสานการ์ดจอหมื่นตัว</h3>
+      <p>จัดคิวให้การ์ดจอนับหมื่นทำงานพร้อมกัน ให้ผลลัพธ์รวมกันเป็นหนึ่งเดียว</p>
+    </div>
+
+  </div>
+</div>
+
+<div class="phase-connector"></div>
+
+<!-- PHASE 3: Alignment -->
+<div class="phase phase-3">
+  <div class="phase-label">
+    <span class="num">03</span>
+    <span>👮 แผนกดัดนิสัยและฝึกมารยาท</span>
+  </div>
+  <div class="conveyor">
+
+    <div class="card">
+      <span class="icon">📖</span>
+      <div class="step-num">STEP 14</div>
+      <h3>เรียนจากตัวอย่างสมบูรณ์</h3>
+      <p>ป้อนบทสนทนาตัวอย่างให้ดู ว่าถามแบบนี้ควรตอบแบบไหน</p>
+    </div>
+    <div class="arrow">→</div>
+
+    <div class="card">
+      <span class="icon">⚖️</span>
+      <div class="step-num">STEP 15</div>
+      <h3>กรรมการให้คะแนน</h3>
+      <p>อ่านคำตอบของ AI แล้วให้คะแนนว่าตอบดีแค่ไหนตามที่มนุษย์พอใจ</p>
+    </div>
+    <div class="arrow">→</div>
+
+    <div class="card">
+      <span class="icon">📜</span>
+      <div class="step-num">STEP 16</div>
+      <h3>ตำรวจกฎเหล็ก</h3>
+      <p>ถ้าคำตอบก้าวร้าวหรือโกหก จะสั่งให้กลับไปคิดมาใหม่ทันที</p>
+    </div>
+    <div class="arrow">→</div>
+
+    <div class="card">
+      <span class="icon">🔒</span>
+      <div class="step-num">STEP 17</div>
+      <h3>ล็อกพฤติกรรมถาวร</h3>
+      <p>นำคะแนนทั้งหมดมาปรับสมองถาวร ให้ AI เลือกตอบแต่สิ่งที่ดีและปลอดภัย</p>
+    </div>
+
+  </div>
+</div>
+
+<!-- DIVIDER -->
+<div class="divider">
+  <span>✅ ผลิตโมเดลเสร็จแล้ว — เริ่มใช้งานจริง</span>
+</div>
+
+<!-- PHASE 4: Input -->
+<div class="phase phase-4">
+  <div class="phase-label">
+    <span class="num">04</span>
+    <span>🚪 แผนกรับและตรวจสอบคำสั่งขาเข้า</span>
+  </div>
+  <div class="conveyor">
+
+    <div class="card">
+      <span class="icon">🛡️</span>
+      <div class="step-num">STEP 18</div>
+      <h3>บอดี้การ์ดหน้าประตู</h3>
+      <p>ตรวจว่าคำสั่งที่พิมพ์มาไม่ได้พยายามโกงหรือสั่งให้ทำเรื่องผิดกฎ</p>
+    </div>
+    <div class="arrow">→</div>
+
+    <div class="card">
+      <span class="icon">🎯</span>
+      <div class="step-num">STEP 19</div>
+      <h3>วิเคราะห์ว่าต้องการอะไร</h3>
+      <p>อ่านคำสั่งแล้วตีความว่าผู้ใช้ต้องการโค้ด สูตรอาหาร หรือการแปลภาษา</p>
+    </div>
+    <div class="arrow">→</div>
+
+    <div class="card">
+      <span class="icon">🌏</span>
+      <div class="step-num">STEP 20</div>
+      <h3>เช็กภาษา</h3>
+      <p>ระบุว่าคำสั่งเป็นภาษาอะไร เพื่อเปิดระบบประมวลผลให้ถูกต้อง</p>
+    </div>
+    <div class="arrow">→</div>
+
+    <div class="card">
+      <span class="icon">🔀</span>
+      <div class="step-num">STEP 21</div>
+      <h3>สับรางส่งให้ผู้เชี่ยวชาญ</h3>
+      <p>ดูว่าเรื่องที่ถามเกี่ยวกับอะไร แล้วส่งต่อให้ทีมที่ถนัดเรื่องนั้น</p>
+    </div>
+
+  </div>
+</div>
+
+<div class="phase-connector"></div>
+
+<!-- PHASE 5: Core Processing -->
+<div class="phase phase-5">
+  <div class="phase-label">
+    <span class="num">05</span>
+    <span>🧠 แผนกทีมผู้เชี่ยวชาญ</span>
+  </div>
+  <div class="conveyor">
+
+    <div class="card">
+      <span class="icon">💻</span>
+      <div class="step-num">STEP 22</div>
+      <h3>ผู้เชี่ยวชาญโค้ด</h3>
+      <p>รับงานเขียน Python, HTML หรือแก้บักโปรแกรมโดยเฉพาะ</p>
+    </div>
+    <div class="arrow">→</div>
+
+    <div class="card">
+      <span class="icon">🔢</span>
+      <div class="step-num">STEP 23</div>
+      <h3>ผู้เชี่ยวชาญคณิตศาสตร์</h3>
+      <p>ดูแลเรื่องการคิดเลข ตรรกะ และการพิสูจน์ทางคณิตศาสตร์</p>
+    </div>
+    <div class="arrow">→</div>
+
+    <div class="card">
+      <span class="icon">✍️</span>
+      <div class="step-num">STEP 24</div>
+      <h3>ผู้เชี่ยวชาญงานเขียน</h3>
+      <p>แต่งกลอน เขียนนิยาย ร่างอีเมล คิดสโลแกนโฆษณา</p>
+    </div>
+    <div class="arrow">→</div>
+
+    <div class="card">
+      <span class="icon">🗣️</span>
+      <div class="step-num">STEP 25</div>
+      <h3>ผู้เชี่ยวชาญแปลภาษา</h3>
+      <p>ดูแลไวยากรณ์และแปลความหมายข้ามภาษาให้ฟังเป็นธรรมชาติ</p>
+    </div>
+    <div class="arrow">→</div>
+
+    <div class="card">
+      <span class="icon">🌍</span>
+      <div class="step-num">STEP 26</div>
+      <h3>ผู้เชี่ยวชาญตรรกะโลกจริง</h3>
+      <p>คุมความสมเหตุสมผลพื้นฐาน เช่น น้ำโดนความร้อนจะระเหย</p>
+    </div>
+
+  </div>
+</div>
+
+<div class="phase-connector"></div>
+
+<!-- PHASE 6: Tools -->
+<div class="phase phase-6">
+  <div class="phase-label">
+    <span class="num">06</span>
+    <span>🛠️ แผนกอุปกรณ์พิเศษ</span>
+  </div>
+  <div class="conveyor">
+
+    <div class="card">
+      <span class="icon">👁️</span>
+      <div class="step-num">STEP 27</div>
+      <h3>ระบบดูรูป</h3>
+      <p>ย่อยพิกเซลจากรูปภาพหรือแผนภูมิที่ส่งมา ให้กลายเป็นข้อมูลที่สมองอ่านได้</p>
+    </div>
+    <div class="arrow">→</div>
+
+    <div class="card">
+      <span class="icon">📦</span>
+      <div class="step-num">STEP 28</div>
+      <h3>วาดกรอบจับวัตถุ</h3>
+      <p>ระบุว่าในรูปมีอะไรอยู่ตรงไหน เช่น แมว อยู่มุมซ้ายบน</p>
+    </div>
+    <div class="arrow">→</div>
+
+    <div class="card">
+      <span class="icon">📄</span>
+      <div class="step-num">STEP 29</div>
+      <h3>อ่านตัวหนังสือในรูป</h3>
+      <p>ดึงข้อความที่อยู่ในรูปภาพหรือเอกสารสแกนออกมาเป็นตัวอักษร</p>
+    </div>
+    <div class="arrow">→</div>
+
+    <div class="card">
+      <span class="icon">🎙️</span>
+      <div class="step-num">STEP 30</div>
+      <h3>แปลงเสียงเป็นตัวอักษร</h3>
+      <p>แปลงไฟล์เสียงหรือเสียงพูดสดให้กลายเป็นข้อความ</p>
+    </div>
+    <div class="arrow">→</div>
+
+    <div class="card">
+      <span class="icon">🔍</span>
+      <div class="step-num">STEP 31</div>
+      <h3>ค้นเว็บแบบเรียลไทม์</h3>
+      <p>เสิร์ช Google เพื่อดึงข้อมูลล่าสุดกลับมาประกอบคำตอบ</p>
+    </div>
+    <div class="arrow">→</div>
+
+    <div class="card">
+      <span class="icon">⚡</span>
+      <div class="step-num">STEP 32</div>
+      <h3>รันโค้ดจริงๆ</h3>
+      <p>เปิดคอมพิวเตอร์จำลองเพื่อรันโค้ดสด ให้ได้ผลลัพธ์ตัวเลขที่ถูกต้อง</p>
+    </div>
+    <div class="arrow">→</div>
+
+    <div class="card">
+      <span class="icon">🎨</span>
+      <div class="step-num">STEP 33</div>
+      <h3>วาดรูปจากคำสั่ง</h3>
+      <p>รับข้อความที่อธิบายภาพ แล้ววาดออกมาเป็นรูปใหม่เอี่ยม</p>
+      <span class="badge-optional">เมื่อสั่งวาดรูป</span>
+    </div>
+    <div class="arrow">→</div>
+
+    <div class="card">
+      <span class="icon">🔊</span>
+      <div class="step-num">STEP 34</div>
+      <h3>แปลงข้อความเป็นเสียง</h3>
+      <p>เปลี่ยนคำตอบสุดท้ายให้กลายเป็นเสียงพูดที่ฟังเป็นธรรมชาติ</p>
+      <span class="badge-optional">เมื่อใช้โหมดเสียง</span>
+    </div>
+
+  </div>
+</div>
+
+<div class="phase-connector"></div>
+
+<!-- PHASE 7: QC -->
+<div class="phase phase-7">
+  <div class="phase-label">
+    <span class="num">07</span>
+    <span>🔍 แผนก QC ตรวจคำตอบก่อนส่งออก</span>
+  </div>
+  <div class="conveyor">
+
+    <div class="card">
+      <span class="icon">🕵️</span>
+      <div class="step-num">STEP 35</div>
+      <h3>จับโกหก</h3>
+      <p>เช็กว่า AI ไม่ได้แต่งเรื่องขึ้นมาเอง โดยเทียบกับข้อมูลจริงที่มี</p>
+    </div>
+    <div class="arrow">→</div>
+
+    <div class="card">
+      <span class="icon">🔁</span>
+      <div class="step-num">STEP 36</div>
+      <h3>ตรวจพูดซ้ำ</h3>
+      <p>ดูว่า AI ไม่ได้ค้างหรือพ่นคำเดิมซ้ำๆ เป็นวงลูป</p>
+    </div>
+    <div class="arrow">→</div>
+
+    <div class="card">
+      <span class="icon">🛡️</span>
+      <div class="step-num">STEP 37</div>
+      <h3>กองเซ็นเซอร์ขาออก</h3>
+      <p>สแกนรอบสุดท้าย ว่าไม่มีคำหยาบ ไม่ละเมิดลิขสิทธิ์ และปลอดภัยร้อยเปอร์เซ็นต์</p>
+    </div>
+    <div class="arrow">→</div>
+
+    <div class="card">
+      <span class="icon">✨</span>
+      <div class="step-num">STEP 38</div>
+      <h3>จัดหน้าให้อ่านง่าย</h3>
+      <p>ใส่ตัวหนา หัวข้อ ตาราง โค้ดบล็อก ให้คำตอบแสดงผลสวยงาม</p>
+    </div>
+
+  </div>
+</div>
+
+<!-- OUTPUT -->
+<div style="margin-top: 24px;">
+  <div class="output-badge">✅ &nbsp; คำตอบขึ้นหน้าจอของคุณ</div>
+</div>
+
+</body>
+</html>
